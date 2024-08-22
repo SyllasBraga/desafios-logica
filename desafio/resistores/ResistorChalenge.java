@@ -26,19 +26,45 @@ public class ResistorChalenge {
         } else if (ohmsValue == -2) {
             return "Valor fora do formato suportado!";
         }
-        
-        String ohmsString = String.valueOf(ohmsValue);
-        int firstDigit = Character.getNumericValue(ohmsString.charAt(0));
-        int secondDigit = Character.getNumericValue(ohmsString.charAt(1));
-        int multiplier = ohmsString.length() - 2;
-        
-        String color1 = colorMap.get(firstDigit);
-        String color2 = colorMap.get(secondDigit);
-        String multiplierColor = colorMap.get(multiplier);
-        
-        return color1 + " " + color2 + " " + multiplierColor + " dourado";
+
+        return buildColorCode(ohmsValue);
     }
-    
+
+    private static String buildColorCode(Integer ohmsValue) {
+        String ohmsString = String.valueOf(ohmsValue);
+        StringBuilder colorCode = new StringBuilder();
+        int numberOfColorsCode = 0;
+
+        numberOfColorsCode = appendSignificantColors(ohmsString, colorCode, numberOfColorsCode);
+
+        String multiplierColor = calculateMultiplierColor(ohmsString, numberOfColorsCode);
+
+        return colorCode.toString().trim() + " " + multiplierColor + " dourado";
+    }
+
+    private static int appendSignificantColors(String ohmsString, StringBuilder colorCode, int numberOfColorsCode) {
+        for (int i = 0; i < ohmsString.length(); i++) {
+            int digit = Character.getNumericValue(ohmsString.charAt(i));
+            if (numberOfColorsCode >= 2) {
+                if (digit != 0) {
+                    String color = colorMap.get(digit);
+                    colorCode.append(color).append(" ");
+                    numberOfColorsCode++;
+                }
+            } else if (numberOfColorsCode < 2) {
+                String color = colorMap.get(digit);
+                colorCode.append(color).append(" ");
+                numberOfColorsCode++;
+            }
+        }
+        return numberOfColorsCode;
+    }
+
+    private static String calculateMultiplierColor(String ohmsString, int numberOfColorsCode) {
+        int multiplier = ohmsString.length() - numberOfColorsCode;
+        return colorMap.get(multiplier);
+    }
+
     public static int calculateOhms(String resistorValue) {
         Pattern pattern = Pattern.compile("(\\d+(\\.\\d+)?)([kM])?\\s*ohms?");
         Matcher matcher = pattern.matcher(resistorValue);
@@ -60,7 +86,7 @@ public class ResistorChalenge {
         }
     }
 
-    private static void initializeColorMap(){
+    private static void initializeColorMap() {
         colorMap.put(0, "preto");
         colorMap.put(1, "marrom");
         colorMap.put(2, "vermelho");
